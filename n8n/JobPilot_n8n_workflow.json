@@ -1,0 +1,100 @@
+{
+  "name": "JobPilot AI - Agent Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jobpilot-analyze",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-jobpilot",
+      "name": "JobPilot Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "webhookId": "jobpilot-analyze"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://crewmate-judge-syndrome.ngrok-free.dev/agent/run",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { company: $json.body.company, job_description: $json.body.job_description, resume_text: $json.body.resume_text, application_date: $json.body.application_date } }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "jobpilot-http-agent",
+      "name": "Run JobPilot Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "jobpilot-response",
+      "name": "Return Agent Result",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        820,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "JobPilot Webhook": {
+      "main": [
+        [
+          {
+            "node": "Run JobPilot Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run JobPilot Agent": {
+      "main": [
+        [
+          {
+            "node": "Return Agent Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "jobpilot-agent-v4",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}
